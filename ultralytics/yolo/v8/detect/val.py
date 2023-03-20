@@ -54,7 +54,7 @@ class DetectionValidator(BaseValidator):
         self.stats = []
 
     def get_desc(self):
-        return ('%22s' + '%11s' * 6) % ('Class', 'Images', 'Instances', 'Box(P', 'R', 'mAP50', 'mAP50-95)')
+        return ('%22s' + '%11s' * 7) % ('Class', 'Images', 'Instances', 'Box(P', 'R', 'F1', 'mAP50', 'mAP50-95)')
 
     def postprocess(self, preds):
         preds = ops.non_max_suppression(preds,

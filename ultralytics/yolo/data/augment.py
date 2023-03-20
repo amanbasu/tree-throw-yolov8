@@ -558,13 +558,28 @@ class Albumentations:
             check_version(A.__version__, '1.0.3', hard=True)  # version requirement
 
             T = [
-                A.Blur(p=0.01),
-                A.MedianBlur(p=0.01),
-                A.ToGray(p=0.01),
-                A.CLAHE(p=0.01),
-                A.RandomBrightnessContrast(p=0.0),
-                A.RandomGamma(p=0.0),
-                A.ImageCompression(quality_lower=75, p=0.0)]  # transforms
+                A.Blur(blur_limit=7, p=0.1),
+                A.ToGray(p=0.1),
+                A.CLAHE(p=0.1),
+                A.RandomBrightnessContrast(p=0.1),
+                A.RandomGamma(p=0.1),
+                A.GridDistortion(p=0.0),                                        # not needed, makes image unreal
+                A.Flip(p=0.25),
+                A.PixelDropout(p=0.1),
+                A.RandomRotate90(p=0.25),
+                A.Sharpen(p=0.1),
+                A.GaussNoise(p=0.1),
+                A.ISONoise(p=0.1),
+            ]
+
+            # T = [
+            #     A.Blur(p=0.01),
+            #     A.MedianBlur(p=0.01),
+            #     A.ToGray(p=0.01),
+            #     A.CLAHE(p=0.01),
+            #     A.RandomBrightnessContrast(p=0.0),
+            #     A.RandomGamma(p=0.0),
+            #     A.ImageCompression(quality_lower=75, p=0.0)]  # transforms
             self.transform = A.Compose(T, bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels']))
 
             LOGGER.info(prefix + ', '.join(f'{x}'.replace('always_apply=False, ', '') for x in T if x.p))
@@ -676,9 +691,10 @@ def v8_transforms(dataset, imgsz, hyp):
         pre_transform,
         MixUp(dataset, pre_transform=pre_transform, p=hyp.mixup),
         Albumentations(p=1.0),
-        RandomHSV(hgain=hyp.hsv_h, sgain=hyp.hsv_s, vgain=hyp.hsv_v),
-        RandomFlip(direction='vertical', p=hyp.flipud),
-        RandomFlip(direction='horizontal', p=hyp.fliplr)])  # transforms
+        # RandomHSV(hgain=hyp.hsv_h, sgain=hyp.hsv_s, vgain=hyp.hsv_v),
+        # RandomFlip(direction='vertical', p=hyp.flipud),
+        # RandomFlip(direction='horizontal', p=hyp.fliplr)
+        ])  # transforms
 
 
 # Classification augmentations -----------------------------------------------------------------------------------------

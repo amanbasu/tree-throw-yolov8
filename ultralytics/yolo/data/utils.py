@@ -15,6 +15,7 @@ import cv2
 import numpy as np
 from PIL import ExifTags, Image, ImageOps
 from tqdm import tqdm
+import tifffile
 
 from ultralytics.nn.autobackend import check_class_names
 from ultralytics.yolo.utils import DATASETS_DIR, LOGGER, NUM_THREADS, ROOT, colorstr, emojis, yaml_load
@@ -36,6 +37,25 @@ for orientation in ExifTags.TAGS.keys():
     if ExifTags.TAGS[orientation] == 'Orientation':
         break
 
+### added ###
+def read_tif(filename, channels=[1, 2, 3]):
+    # channel 1 - hpass, 2 - slope, 3 - msrm
+    im = tifffile.imread(filename)
+
+    # normalize
+    min_, max_ = im.min(axis=(0, 1)), im.max(axis=(0, 1))
+    with np.errstate(divide='ignore', invalid='ignore'):
+        im = (im - min_) / (max_ - min_)
+    im[np.isnan(im)] = 0                                            # if denomenator is zero
+    im = (im * 255).astype('uint8')
+    
+    return im
+    # remove channels not needed
+    # im2 = np.zeros_like(im)
+    # for channel in channels:
+    #     im2[:, :, channel - 1] = im[:, :, channel - 1]
+    # return im2
+### added ###
 
 def img2label_paths(img_paths):
     # Define label paths as a function of image paths
@@ -60,26 +80,27 @@ def exif_size(img):
             s = (s[1], s[0])
     return s
 
-
 def verify_image_label(args):
     # Verify one image-label pair
     im_file, lb_file, prefix, keypoint, num_cls = args
     # number (missing, found, empty, corrupt), message, segments, keypoints
     nm, nf, ne, nc, msg, segments, keypoints = 0, 0, 0, 0, '', [], None
     try:
-        # verify images
-        im = Image.open(im_file)
-        im.verify()  # PIL verify
-        shape = exif_size(im)  # image size
-        shape = (shape[1], shape[0])  # hw
-        assert (shape[0] > 9) & (shape[1] > 9), f'image size {shape} <10 pixels'
-        assert im.format.lower() in IMG_FORMATS, f'invalid image format {im.format}'
-        if im.format.lower() in ('jpg', 'jpeg'):
-            with open(im_file, 'rb') as f:
-                f.seek(-2, 2)
-                if f.read() != b'\xff\xd9':  # corrupt JPEG
-                    ImageOps.exif_transpose(Image.open(im_file)).save(im_file, 'JPEG', subsampling=0, quality=100)
-                    msg = f'{prefix}WARNING ⚠️ {im_file}: corrupt JPEG restored and saved'
+        im = read_tif(im_file)
+        shape = (im.shape[1], im.shape[0])
+        # # verify images
+        # im = Image.open(im_file)
+        # im.verify()  # PIL verify
+        # shape = exif_size(im)  # image size
+        # shape = (shape[1], shape[0])  # hw
+        # assert (shape[0] > 9) & (shape[1] > 9), f'image size {shape} <10 pixels'
+        # assert im.format.lower() in IMG_FORMATS, f'invalid image format {im.format}'
+        # if im.format.lower() in ('jpg', 'jpeg'):
+        #     with open(im_file, 'rb') as f:
+        #         f.seek(-2, 2)
+        #         if f.read() != b'\xff\xd9':  # corrupt JPEG
+        #             ImageOps.exif_transpose(Image.open(im_file)).save(im_file, 'JPEG', subsampling=0, quality=100)
+        #             msg = f'{prefix}WARNING ⚠️ {im_file}: corrupt JPEG restored and saved'
 
         # verify labels
         if os.path.isfile(lb_file):
@@ -417,3 +438,4 @@ class HUBDatasetStats():
                     pass
         LOGGER.info(f'Done. All images saved to {self.im_dir}')
         return self.im_dir
+

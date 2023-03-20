@@ -13,8 +13,7 @@ from torch.utils.data import Dataset
 from tqdm import tqdm
 
 from ..utils import NUM_THREADS, TQDM_BAR_FORMAT
-from .utils import HELP_URL, IMG_FORMATS, LOCAL_RANK
-
+from .utils import HELP_URL, IMG_FORMATS, LOCAL_RANK, read_tif
 
 class BaseDataset(Dataset):
     """Base Dataset.
@@ -115,7 +114,8 @@ class BaseDataset(Dataset):
             if fn.exists():  # load npy
                 im = np.load(fn)
             else:  # read image
-                im = cv2.imread(f)  # BGR
+                im = read_tif(f)
+                # im = cv2.imread(f)  # BGR
                 if im is None:
                     raise FileNotFoundError(f'Image Not Found {f}')
             h0, w0 = im.shape[:2]  # orig hw

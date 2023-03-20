@@ -62,7 +62,7 @@ def seed_worker(worker_id):  # noqa
 
 
 def build_dataloader(cfg, batch, img_path, stride=32, rect=False, names=None, rank=-1, mode='train'):
-    assert mode in ['train', 'val']
+    assert mode in ['train', 'val', 'test']
     shuffle = mode == 'train'
     if cfg.rect and shuffle:
         LOGGER.warning("WARNING ⚠️ 'rect=True' is incompatible with DataLoader shuffle, setting shuffle=False")

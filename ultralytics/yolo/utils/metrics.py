@@ -498,6 +498,14 @@ class Metric:
         return self.r.mean() if len(self.r) else 0.0
 
     @property
+    def mf1(self):
+        """mean f1 of all classes.
+        Returns:
+            float.
+        """
+        return self.f1.mean() if len(self.f1) else 0.0
+
+    @property
     def map50(self):
         """Mean AP@0.5 of all classes.
         Returns:
@@ -523,11 +531,11 @@ class Metric:
 
     def mean_results(self):
         """Mean of results, return mp, mr, map50, map"""
-        return [self.mp, self.mr, self.map50, self.map]
+        return [self.mp, self.mr, self.mf1, self.map50, self.map]
 
     def class_result(self, i):
         """class-aware result, return p[i], r[i], ap50[i], ap[i]"""
-        return self.p[i], self.r[i], self.ap50[i], self.ap[i]
+        return self.p[i], self.r[i], self.f1[i], self.ap50[i], self.ap[i]
 
     @property
     def maps(self):
@@ -539,7 +547,7 @@ class Metric:
 
     def fitness(self):
         # Model fitness as a weighted combination of metrics
-        w = [0.0, 0.0, 0.1, 0.9]  # weights for [P, R, mAP@0.5, mAP@0.5:0.95]
+        w = [0.0, 0.0, 0.0, 0.1, 0.9]  # weights for [P, R, F1, mAP@0.5, mAP@0.5:0.95]
         return (np.array(self.mean_results()) * w).sum()
 
     def update(self, results):
@@ -597,7 +605,7 @@ class DetMetrics:
 
     @property
     def keys(self):
-        return ['metrics/precision(B)', 'metrics/recall(B)', 'metrics/mAP50(B)', 'metrics/mAP50-95(B)']
+        return ['metrics/precision(B)', 'metrics/recall(B)', 'metrics/F1(B)', 'metrics/mAP50(B)', 'metrics/mAP50-95(B)']
 
     def mean_results(self):
         return self.box.mean_results()
@@ -697,8 +705,8 @@ class SegmentMetrics:
     @property
     def keys(self):
         return [
-            'metrics/precision(B)', 'metrics/recall(B)', 'metrics/mAP50(B)', 'metrics/mAP50-95(B)',
-            'metrics/precision(M)', 'metrics/recall(M)', 'metrics/mAP50(M)', 'metrics/mAP50-95(M)']
+            'metrics/precision(B)', 'metrics/recall(B)', 'metrics/F1(B)', 'metrics/mAP50(B)', 'metrics/mAP50-95(B)',
+            'metrics/precision(M)', 'metrics/recall(M)', 'metrics/F1(M)', 'metrics/mAP50(M)', 'metrics/mAP50-95(M)']
 
     def mean_results(self):
         return self.box.mean_results() + self.seg.mean_results()

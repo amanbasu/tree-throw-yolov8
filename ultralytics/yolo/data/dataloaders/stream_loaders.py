@@ -16,7 +16,7 @@ import torch
 from PIL import Image
 
 from ultralytics.yolo.data.augment import LetterBox
-from ultralytics.yolo.data.utils import IMG_FORMATS, VID_FORMATS
+from ultralytics.yolo.data.utils import IMG_FORMATS, VID_FORMATS, read_tif
 from ultralytics.yolo.utils import LOGGER, ROOT, is_colab, is_kaggle, ops
 from ultralytics.yolo.utils.checks import check_requirements
 
@@ -169,7 +169,6 @@ class LoadScreenshots:
         self.frame += 1
         return str(self.screen), im, im0, None, s  # screen, img, original img, im0s, s
 
-
 class LoadImages:
     # YOLOv8 image/video dataloader, i.e. `yolo predict source=image.jpg/vid.mp4`
     def __init__(self, path, imgsz=640, stride=32, auto=True, transforms=None, vid_stride=1):
@@ -241,7 +240,9 @@ class LoadImages:
         else:
             # Read image
             self.count += 1
-            im0 = cv2.imread(path)  # BGR
+
+            im0 = read_tif(path) if path[-3:] == 'tif' else cv2.imread(path)
+
             if im0 is None:
                 raise FileNotFoundError(f'Image Not Found {path}')
             s = f'image {self.count}/{self.nf} {path}: '
