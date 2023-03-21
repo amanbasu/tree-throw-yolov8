@@ -13,5 +13,6 @@ model.train(
     name='all_data',
     augment=True,
     single_cls=True,
-    box=7.5,
+    scale=2,
+    box=0.05,
 )

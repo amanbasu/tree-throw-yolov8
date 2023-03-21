@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 
 # load model
-model = YOLO('runs/detect/all_data2/weights/best.pt')
+model = YOLO('runs/detect/all_data4/weights/best.pt')
 
 # eval model
 metrics = model.val(
@@ -10,7 +10,7 @@ metrics = model.val(
     mode='test',
     batch=32,
     cache=False,
-    name='val/all_data',
+    name='val/all_data4',
     save_txt=True,
     save_conf=True,
     single_cls=True,
