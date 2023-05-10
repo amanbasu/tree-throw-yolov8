@@ -43,11 +43,11 @@ def read_tif(filename, channels=[1, 2, 3]):
     im = tifffile.imread(filename)
 
     # normalize
-    min_, max_ = im.min(axis=(0, 1)), im.max(axis=(0, 1))
-    with np.errstate(divide='ignore', invalid='ignore'):
-        im = (im - min_) / (max_ - min_)
-    im[np.isnan(im)] = 0                                            # if denomenator is zero
-    im = (im * 255).astype('uint8')
+    # min_, max_ = im.min(axis=(0, 1)), im.max(axis=(0, 1))
+    # with np.errstate(divide='ignore', invalid='ignore'):
+    #     im = (im - min_) / (max_ - min_)
+    # im[np.isnan(im)] = 0                                            # if denomenator is zero
+    # im = (im * 255).astype('uint8')
     
     return im
     # remove channels not needed

@@ -34,6 +34,8 @@ from ultralytics.yolo.utils.files import get_latest_run, increment_path
 from ultralytics.yolo.utils.torch_utils import (EarlyStopping, ModelEMA, de_parallel, init_seeds, one_cycle,
                                                 select_device, strip_optimizer)
 
+import mlflow
+import shutil
 
 class BaseTrainer:
     """
@@ -356,6 +358,13 @@ class BaseTrainer:
                 if self.args.val or final_epoch:
                     self.metrics, self.fitness = self.validate()
                 self.save_metrics(metrics={**self.label_loss_items(self.tloss), **self.metrics, **self.lr})
+
+                # log metrics to mlflow
+                for key, value in self.metrics.items():
+                    mlflow.log_metric(key[:-3], value, step=epoch+1)
+                mlflow.log_metric('fitness', self.fitness, step=epoch+1)
+                mlflow.log_metric('box_loss', self.tloss[0], step=epoch+1)
+
                 self.stop = self.stopper(epoch + 1, self.fitness)
 
                 # Save model
@@ -404,6 +413,10 @@ class BaseTrainer:
         torch.save(ckpt, self.last)
         if self.best_fitness == self.fitness:
             torch.save(ckpt, self.best)
+            # save best model
+            if os.path.exists("mlflow_yolov5l"):
+                shutil.rmtree("mlflow_yolov5l")
+            mlflow.pytorch.save_model(self.model, "mlflow_yolov5l")
         if (self.epoch > 0) and (self.save_period > 0) and (self.epoch % self.save_period == 0):
             torch.save(ckpt, self.wdir / f'epoch{self.epoch}.pt')
         del ckpt

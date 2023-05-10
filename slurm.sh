@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J box_75
+#SBATCH -J mlflow
 #SBATCH -p gpu
 #SBATCH -A r00060
 #SBATCH -e logs/filename_%j.err
@@ -16,5 +16,6 @@
 module load anaconda/python3.8
 
 #Run your program
-python mytrain.py
-# python train.py --img 400 --batch 64 --epochs 300 --data ../FADS_EAS_Tree-Throw-Prediction/datasets5/TreeThrow.yaml --name all_data --augment --cache --resume
+mlflow run . --env-manager=local
+# python mytrain.py
+# python train.py --img 400 --batch 64 --epochs 300 --data ../tree-throw-yolov8/dataset-train/TreeThrow.yaml --name all_data --augment --cache --resume

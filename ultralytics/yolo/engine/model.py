@@ -14,6 +14,8 @@ from ultralytics.yolo.utils.checks import check_file, check_imgsz, check_pip_upd
 from ultralytics.yolo.utils.downloads import GITHUB_ASSET_STEMS
 from ultralytics.yolo.utils.torch_utils import smart_inference_mode
 
+import mlflow
+
 # Map head to model, trainer, validator, and predictor classes
 TASK_MAP = {
     'classify': [
@@ -317,6 +319,9 @@ class YOLO:
         if overrides.get('resume'):
             overrides['resume'] = self.ckpt_path
 
+        for key, value in overrides.items():
+            mlflow.log_param(key, value)
+
         self.task = overrides.get('task') or self.task
         self.trainer = TASK_MAP[self.task][1](overrides=overrides)
         if not overrides.get('resume'):  # manually set model only if not resuming
@@ -329,6 +334,14 @@ class YOLO:
             self.model, _ = attempt_load_one_weight(str(self.trainer.best))
             self.overrides = self.model.args
             self.metrics = getattr(self.trainer.validator, 'metrics', None)  # TODO: no metrics returned by DDP
+
+            # log metrics to mlflow
+            res = self.metrics.mean_results()
+            mlflow.log_metric('val_p', res[0])
+            mlflow.log_metric('val_r', res[1])
+            mlflow.log_metric('val_f1', res[2])
+            mlflow.log_metric('val_map50', res[3])
+            mlflow.log_metric('val_map', res[4])
 
     def to(self, device):
         """

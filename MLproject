@@ -1,0 +1,13 @@
+name: tree_throw
+
+python_env: python_env.yaml
+
+entry_points:
+  main:
+    parameters:
+      run_name: {type: string, default: ''}
+    command: "python mytrain.py"
+  validate:
+    parameters:
+      data_file: path
+    command: "python myval.py"

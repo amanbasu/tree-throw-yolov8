@@ -17,7 +17,6 @@ from ultralytics.yolo.utils.plotting import plot_images, plot_labels, plot_resul
 from ultralytics.yolo.utils.tal import TaskAlignedAssigner, dist2bbox, make_anchors
 from ultralytics.yolo.utils.torch_utils import de_parallel
 
-
 # BaseTrainer python usage
 class DetectionTrainer(BaseTrainer):
 
